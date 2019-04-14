@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">AccountVault</string>
+    <string name="action_settings">Settings</string>
+    <string name="addBtnText">Add</string>
+    <string name="text_header">Message Received</string>
+    <string name="lblAccountName">Account Name:</string>
+    <string name="lblUserName">User Name:</string>
+    <string name="lblEmail">Email:</string>
+    <string name="lblPassword">Password:</string>
+    <string name="lblAccountNumber">Account Number</string>
+    <string name="btnSubmit">Submit</string>
+    <string name="lblSecurity">Security Question:</string>
 </resources>
