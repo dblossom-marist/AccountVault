@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -41,6 +42,16 @@ public class MainActivity extends AppCompatActivity {
 
         ListView listView = findViewById(R.id.mobile_list);
         listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(view.getContext(), AccountView.class);
+                intent.putExtra("accountName",accountNames.get(position));
+                startActivity(intent);
+                //startActivityForResult(intent,0);
+            }
+        });
     }
 
     public void addAccountButton(View view){
