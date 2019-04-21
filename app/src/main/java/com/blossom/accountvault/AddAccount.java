@@ -34,12 +34,22 @@ public class AddAccount extends AppCompatActivity {
 
         //TODO: Here is where we can encrypt the strings, create a method
 
-        values.put("account_name",accName.getText().toString());
-        values.put("user_name", user.getText().toString());
-        values.put("email", email.getText().toString());
-        values.put("password", pwd.getText().toString());
-        values.put("account_number", accNum.getText().toString());
-        values.put("security", security.getText().toString());
+        AEScipher aesCipher = new AEScipher();
+        String hexSecureKey = aesCipher.randomKey();
+        String encryptedAccName = aesCipher.encrypt(accName.getText().toString(), hexSecureKey);
+        String encryptedUser = aesCipher.encrypt(user.getText().toString(), hexSecureKey);
+        String encryptedEmail = aesCipher.encrypt(email.getText().toString(), hexSecureKey);
+        String encryptedPwd = aesCipher.encrypt(pwd.getText().toString(), hexSecureKey);
+        String encryptedAccNum = aesCipher.encrypt(accNum.getText().toString(), hexSecureKey);
+        String encryptedSecurity = aesCipher.encrypt(security.getText().toString(), hexSecureKey);
+
+        values.put("account_name",encryptedAccName);
+        values.put("user_name", encryptedUser);
+        values.put("email", encryptedEmail);
+        values.put("password", encryptedPwd);
+        values.put("account_number", encryptedAccNum);
+        values.put("security", encryptedSecurity);
+        values.put("hexkey", hexSecureKey);
 
         myDatabase.insert("accounts",null,values);
 

@@ -23,17 +23,28 @@ public class MainActivity extends AppCompatActivity {
     // The database connection.
     SQLiteDatabase myDatabase;
 
+    //TODO: Try centralize DB stuff, not working ATM - bug report #
+    //Database myDatabase;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //myDatabase = new Database();
+
         myDatabase = openOrCreateDatabase("account_vault",
-                MODE_PRIVATE,null);
+                MODE_PRIVATE, null);
+
+        /**
+         * In case you want to drop the table on next run ...
+         */
+        //myDatabase.execSQL("DROP TABLE accounts");
 
         myDatabase.execSQL("CREATE TABLE IF NOT EXISTS accounts" +
                 "(account_name text, user_name text, email text, " +
-                "password text, account_number text, security text);");
+                "password text, account_number text, security text," +
+                "hexkey text);");
 
         accountNames = generateExistingAccountListing(myDatabase);
 
@@ -59,17 +70,18 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private ArrayList<String> generateExistingAccountListing(SQLiteDatabase db){
+    private ArrayList<String> generateExistingAccountListing(SQLiteDatabase database){
 
         ArrayList<String> returnList =  new ArrayList<>();
 
-        Cursor resultSet = db.rawQuery("Select account_name from accounts",
+        //Cursor resultSet = database.getAllAccounts();
+        Cursor resultSet = database.rawQuery("Select account_name from accounts",
                 null);
         resultSet.moveToFirst();
 
         while(!resultSet.isAfterLast()){
 
-            String s = resultSet.getString(0);
+            String a = resultSet.getString(0);
             returnList.add(s);
             resultSet.moveToNext();
 
