@@ -75,14 +75,20 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> returnList =  new ArrayList<>();
 
         //Cursor resultSet = database.getAllAccounts();
-        Cursor resultSet = database.rawQuery("Select account_name from accounts",
+        Cursor resultSet = database.rawQuery("Select account_name, hexkey from accounts",
                 null);
         resultSet.moveToFirst();
 
         while(!resultSet.isAfterLast()){
 
-            String a = resultSet.getString(0);
-            returnList.add(s);
+            String accountName = resultSet.getString(
+                                 resultSet.getColumnIndex("account_name"));
+
+            //String decryptKey = resultSet.getString(
+            //                    resultSet.getColumnIndex("hexkey"));
+            //AEScipher aesCipher = new AEScipher();
+            //String decryptedName = aesCipher.decrypt(accountName, decryptKey);
+            returnList.add(accountName);
             resultSet.moveToNext();
 
         }
