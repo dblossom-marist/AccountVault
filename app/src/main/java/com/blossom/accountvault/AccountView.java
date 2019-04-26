@@ -19,10 +19,6 @@ public class AccountView extends AppCompatActivity {
         myDatabase = openOrCreateDatabase("account_vault",
                 MODE_PRIVATE, null);
 
-        //myDatabase.execSQL("CREATE TABLE IF NOT EXISTS accounts" +
-        //        "(account_name text, user_name text, email text, " +
-        //        "password text, account_number text, security text);");
-
         accountName = findViewById(R.id.txtAccountName);
         accountName.setText(getIntent().getStringExtra("accountName"));
         accountName.setTextSize(40);
@@ -47,11 +43,15 @@ public class AccountView extends AppCompatActivity {
 
         cursor.moveToFirst();
 
-        user.setText(cursor.getString(1));
-        email.setText(cursor.getString(2));
-        pwd.setText(cursor.getString(3));
-        accNum.setText(cursor.getString(4));
-        security.setText(cursor.getString(5));
+        String key = cursor.getString(6);
+
+        AEScipher aesCipher = new AEScipher();
+
+        user.setText(aesCipher.decrypt(cursor.getString(1),key));
+        email.setText(aesCipher.decrypt(cursor.getString(2),key));
+        pwd.setText(aesCipher.decrypt(cursor.getString(3),key));
+        accNum.setText(aesCipher.decrypt(cursor.getString(4),key));
+        security.setText(aesCipher.decrypt(cursor.getString(5),key));
 
     }
 }
