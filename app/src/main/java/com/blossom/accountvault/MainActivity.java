@@ -1,4 +1,15 @@
 package com.blossom.accountvault;
+/**
+ * This class is the main class for the AccountValut program
+ *
+ * @author D. Blossom
+ * @version Beta, extremely beta, please do not use in real life!
+ */
+
+
+/**
+ * All my imports ...
+ */
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -9,10 +20,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
-
 import java.util.ArrayList;
 
+/**
+ * The MainActivity class, which is the "front page" of the application
+ */
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -38,13 +50,14 @@ public class MainActivity extends AppCompatActivity {
 
         /**
          * In case you want to drop the table on next run ...
+         * Useful for debugging to wipe DB or add tables etc
          */
         //myDatabase.execSQL("DROP TABLE accounts");
 
         myDatabase.execSQL("CREATE TABLE IF NOT EXISTS accounts" +
                 "(account_name text, user_name text, email text, " +
                 "password text, account_number text, security text," +
-                "hexkey text);");
+                "ivKey blob, encrypt blob);");
 
         accountNames = generateExistingAccountListing(myDatabase);
 
@@ -75,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> returnList =  new ArrayList<>();
 
         //Cursor resultSet = database.getAllAccounts();
-        Cursor resultSet = database.rawQuery("Select account_name, hexkey from accounts",
+        Cursor resultSet = database.rawQuery("Select account_name from accounts",
                 null);
         resultSet.moveToFirst();
 

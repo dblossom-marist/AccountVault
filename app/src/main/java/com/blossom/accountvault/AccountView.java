@@ -2,9 +2,26 @@ package com.blossom.accountvault;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
+
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 
 public class AccountView extends AppCompatActivity {
 
@@ -43,7 +60,15 @@ public class AccountView extends AppCompatActivity {
 
         cursor.moveToFirst();
 
-        String key = cursor.getString(6);
+        // this is just N/A now, we are keeping key in keystore
+        //String key = cursor.getString(6);
+
+        // However, we are storing the IV for the keystore there ... ?
+        // Am I just moving around the vulnerability?
+        byte[] ivKey = cursor.getBlob(6);
+        byte[] ksEncrypt = cursor.getBlob(7);
+
+        String key = getKeyFromStore(aName, ivKey, ksEncrypt);
 
         AEScipher aesCipher = new AEScipher();
 
@@ -52,6 +77,51 @@ public class AccountView extends AppCompatActivity {
         pwd.setText(aesCipher.decrypt(cursor.getString(3),key));
         accNum.setText(aesCipher.decrypt(cursor.getString(4),key));
         security.setText(aesCipher.decrypt(cursor.getString(5),key));
+    }
 
+    private String getKeyFromStore(String aName, byte[] ivKey, byte[] ksEncrypt) {
+
+        byte[] decodedData = null;
+
+        try {
+            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null);
+
+            final KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore
+                    .getEntry(aName, null);
+
+            final SecretKey secretKey = secretKeyEntry.getSecretKey();
+
+            final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            final GCMParameterSpec spec;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                spec = new GCMParameterSpec(128, ivKey);
+                cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
+            }
+            decodedData = cipher.doFinal(ksEncrypt);
+
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (UnrecoverableEntryException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+
+        return new String(decodedData);
     }
 }
