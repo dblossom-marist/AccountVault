@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     // The database connection.
     SQLiteDatabase myDatabase;
 
-    //TODO: Try centralize DB stuff, not working ATM - bug report #
+    //TODO: Try centralize DB stuff, not working ATM - bug report #1
     //Database myDatabase;
 
     @Override
@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         //myDatabase = new Database();
 
+        // Create DB
         myDatabase = openOrCreateDatabase("account_vault",
                 MODE_PRIVATE, null);
 
@@ -54,60 +55,73 @@ public class MainActivity extends AppCompatActivity {
          */
         //myDatabase.execSQL("DROP TABLE accounts");
 
+        // Create table if needed
         myDatabase.execSQL("CREATE TABLE IF NOT EXISTS accounts" +
                 "(account_name text, user_name text, email text, " +
                 "password text, account_number text, security text," +
                 "ivKey blob, encrypt blob);");
 
+        // Get a listing of all accounts
         accountNames = generateExistingAccountListing(myDatabase);
 
+        // Set adapter and all that fun stuff - Android boilerplate
         ArrayAdapter adapter = new ArrayAdapter<>(this,
                 R.layout.activity_listview, accountNames);
 
         ListView listView = findViewById(R.id.mobile_list);
         listView.setAdapter(adapter);
 
+        // Set the listview to listen if someone clicks and wants to see the details
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(view.getContext(), AccountView.class);
                 intent.putExtra("accountName",accountNames.get(position));
                 startActivity(intent);
-                //startActivityForResult(intent,0);
             }
         });
     }
 
+    /**
+     * Button that allows a user to add an account to the application
+     * @param view the view to enter details
+     */
     public void addAccountButton(View view){
         Intent intent = new Intent(this, AddAccount.class);
         startActivity(intent);
     }
 
+    /**
+     * A private helper method that gets the account name out of the database
+     * @param database the database to retrieve the data from
+     * @return a list of account names
+     */
     private ArrayList<String> generateExistingAccountListing(SQLiteDatabase database){
 
         ArrayList<String> returnList =  new ArrayList<>();
 
-        //Cursor resultSet = database.getAllAccounts();
+        // Do the query
         Cursor resultSet = database.rawQuery("Select account_name from accounts",
                 null);
+        // Go to first
         resultSet.moveToFirst();
 
+        // loopy until all accounts found
         while(!resultSet.isAfterLast()){
 
             String accountName = resultSet.getString(
                                  resultSet.getColumnIndex("account_name"));
-
-            //String decryptKey = resultSet.getString(
-            //                    resultSet.getColumnIndex("hexkey"));
-            //AEScipher aesCipher = new AEScipher();
-            //String decryptedName = aesCipher.decrypt(accountName, decryptKey);
             returnList.add(accountName);
             resultSet.moveToNext();
 
         }
+        // ... AND return.
         return returnList;
     }
 
+    /**
+     * Stuff to do when we return (update account list mainly)
+     */
     @Override
     protected void onRestart(){
         super.onRestart();

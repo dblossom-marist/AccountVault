@@ -357,6 +357,10 @@ public class AEScipher {
     
   }
 
+  /**
+   * This method will generate a random-ish key for us to use
+   * @return a random AES Key at 128 bits.
+   */
   public String randomKey(){
       SecureRandom secureRandom = new SecureRandom();
       StringBuilder hexString = new StringBuilder();

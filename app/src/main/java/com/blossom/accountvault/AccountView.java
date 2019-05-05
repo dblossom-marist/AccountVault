@@ -1,12 +1,24 @@
 package com.blossom.accountvault;
 
+/**
+ * This class is for the account view, that is the view that will display
+ * The details of a given account
+ *
+ * @author D. Blossom
+ * @version 5/5/2019
+ */
+
+
+/**
+ * Lots of imports.
+ */
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -15,7 +27,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -23,9 +34,14 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
+/**
+ * The Class.
+ */
 public class AccountView extends AppCompatActivity {
 
+    // The account name we are going to display
     TextView accountName;
+    // The database which holds the encrypted stuff.
     SQLiteDatabase myDatabase;
 
     @Override
@@ -33,19 +49,28 @@ public class AccountView extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account_view);
 
+        // open DB
         myDatabase = openOrCreateDatabase("account_vault",
                 MODE_PRIVATE, null);
 
+        // get view for account selected
         accountName = findViewById(R.id.txtAccountName);
         accountName.setText(getIntent().getStringExtra("accountName"));
         accountName.setTextSize(40);
 
+        // display all data
         displayAccountInformation(getIntent().getStringExtra("accountName"));
     }
 
+    /**
+     * A helper method that will grab info from DB, decrypt it and display
+     * It also utilizes the Android KeyStore to get the security key to
+     * do the decryption process.
+     * @param aName the account to view
+     */
     private void displayAccountInformation(String aName){
 
-
+        // Getting the text views
         TextView user = findViewById(R.id.txtUserName);
         TextView email = findViewById(R.id.txtEmail);
         TextView pwd = findViewById(R.id.txtPassword);
@@ -54,24 +79,25 @@ public class AccountView extends AppCompatActivity {
 
         //Database database = new Database();
 
-        //Cursor cursor = database.getAccountInformation(aName);
+        // Get the account stuff
         Cursor cursor = myDatabase.rawQuery("SELECT * from accounts WHERE account_name=?",
                 new String[] {aName});
 
+        // get the result
         cursor.moveToFirst();
-
-        // this is just N/A now, we are keeping key in keystore
-        //String key = cursor.getString(6);
 
         // However, we are storing the IV for the keystore there ... ?
         // Am I just moving around the vulnerability?
         byte[] ivKey = cursor.getBlob(6);
         byte[] ksEncrypt = cursor.getBlob(7);
 
+        // Get the decryption key
         String key = getKeyFromStore(aName, ivKey, ksEncrypt);
 
+        // Our homebrewed AES class - build from Labs in course
         AEScipher aesCipher = new AEScipher();
 
+        // Decrypt and display results.
         user.setText(aesCipher.decrypt(cursor.getString(1),key));
         email.setText(aesCipher.decrypt(cursor.getString(2),key));
         pwd.setText(aesCipher.decrypt(cursor.getString(3),key));
@@ -79,8 +105,18 @@ public class AccountView extends AppCompatActivity {
         security.setText(aesCipher.decrypt(cursor.getString(5),key));
     }
 
+    /**
+     *
+     * @param aName The account name
+     * @param ivKey The ivKey used with KeyStore
+     * @param ksEncrypt The encrypted text from keyStore (our AES key)
+     * @return
+     */
     private String getKeyFromStore(String aName, byte[] ivKey, byte[] ksEncrypt) {
 
+        /**
+         * A lot of Android KeyStore boiler plate-ish code
+         */
         byte[] decodedData = null;
 
         try {
@@ -122,6 +158,7 @@ public class AccountView extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        // return the encrypted key but now decrypted.
         return new String(decodedData);
     }
 }

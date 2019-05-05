@@ -1,5 +1,15 @@
 package com.blossom.accountvault;
 
+/**
+ * This class is called when a user wants to add an account to their application
+ *
+ * @author D. Blossom
+ * @version 5/5/2019
+ */
+
+/**
+ * Lots of imports
+ */
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
@@ -10,14 +20,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -25,21 +32,34 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+/**
+ * Class declaration
+ */
 public class AddAccount extends AppCompatActivity {
 
+    // My database to write to.
     SQLiteDatabase myDatabase;
 
+    /**
+     * The view creation
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_account);
     }
 
+    /**
+     * The submit button, that will write information to database
+     * @param view the view
+     */
     public void submitButton(View view){
 
         myDatabase = openOrCreateDatabase("account_vault",
                 MODE_PRIVATE,null);
 
+        // All the text fields in said view.
         TextView accName = findViewById(R.id.txtAccountName);
         TextView user = findViewById(R.id.txtUserName);
         TextView email = findViewById(R.id.txtEmail);
@@ -47,13 +67,16 @@ public class AddAccount extends AppCompatActivity {
         TextView accNum = findViewById(R.id.txtAccountNumber);
         TextView security = findViewById(R.id.txtSecurity);
 
+        // The values we will write into DB
         ContentValues values = new ContentValues();
 
-        //TODO: Here is where we can encrypt the strings, create a method
-
+        // Our AES class & generate a random key
         AEScipher aesCipher = new AEScipher();
         String hexSecureKey = aesCipher.randomKey();
 
+        // Our initialization vector & encrypted key
+        // We need to keep our AES key safe, so we will
+        // too encrypt that using Android KeyStore!
         byte iv[] = null;
         byte encryption[] = null;
 
@@ -79,7 +102,6 @@ public class AddAccount extends AppCompatActivity {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
             iv = cipher.getIV();
-
             encryption = cipher.doFinal(hexSecureKey.getBytes("UTF-8"));
 
         } catch (NoSuchAlgorithmException e) {
@@ -100,14 +122,14 @@ public class AddAccount extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        //String encryptedAccName = aesCipher.encrypt(accName.getText().toString(), hexSecureKey);
+        // Here we encrypt everything
         String encryptedUser = aesCipher.encrypt(user.getText().toString(), hexSecureKey);
         String encryptedEmail = aesCipher.encrypt(email.getText().toString(), hexSecureKey);
         String encryptedPwd = aesCipher.encrypt(pwd.getText().toString(), hexSecureKey);
         String encryptedAccNum = aesCipher.encrypt(accNum.getText().toString(), hexSecureKey);
         String encryptedSecurity = aesCipher.encrypt(security.getText().toString(), hexSecureKey);
 
-        //values.put("account_name",encryptedAccName);
+        // Here we store those things in the DB
         values.put("account_name", accName.getText().toString());
         values.put("user_name", encryptedUser);
         values.put("email", encryptedEmail);
@@ -115,14 +137,17 @@ public class AddAccount extends AppCompatActivity {
         values.put("account_number", encryptedAccNum);
         values.put("security", encryptedSecurity);
         // No longer storing key in DB but in KeyStore
-        // convert byte array to string since we are storing text
+        // Here is the encrypted key and IV for said key
         values.put("ivKey", iv);
         values.put("encrypt", encryption);
 
+        // insert, it's official
         myDatabase.insert("accounts",null,values);
 
+        // That's a wrap!
         myDatabase.close();
 
+        // Clear fields.
         accName.setText("");
         user.setText("");
         email.setText("");
